@@ -13,6 +13,7 @@
   <img src="https://img.shields.io/badge/macOS-14%2B-black?logo=apple" alt="macOS 14+">
   <img src="https://img.shields.io/badge/Swift-SwiftUI-F05138?logo=swift&logoColor=white" alt="SwiftUI">
   <img src="https://img.shields.io/badge/size-~300%20KB-8B5A2B" alt="~300 KB">
+  <img src="https://img.shields.io/badge/license-MIT-green" alt="MIT license">
 </p>
 
 <p align="center">
@@ -32,10 +33,23 @@
 
 **Cold Brew** steeps quietly in the dark: the display is free to sleep, but the system isn't (`PreventUserIdleSystemSleep`). Your processes keep going and your screen stays dark.
 
+## ✳️ While Claude works
+
+Flip **While Claude works** and Brew stays awake exactly as long as [Claude Code](https://claude.com/claude-code) is busy, then lets your Mac sleep **2 minutes after the last task ends**. Start a long refactor, switch on Cold Brew, lock your screen and walk away: no wasted night of battery, no agent killed halfway.
+
+It works across every open session, and the menu shows how many are running or the countdown before Brew lets go.
+
+<details>
+<summary>How does it know?</summary>
+
+An idle `claude` process waiting for a prompt sits around 0.5% CPU. While it works (thinking, streaming, waiting on a tool), its animated spinner keeps it above ~4%. Brew samples the CPU time of every Claude Code process every 5 s over a 15 s sliding window, and treats anything above 3% as busy. There are no hooks to install and no config to touch.
+</details>
+
 ## Features
 
 - **One click** to toggle a mode, and one more to turn it off
 - **Timers**: ∞, 15 min, 1 h, 2 h, 4 h. Brew stops on its own when time's up
+- **While Claude works**: stays awake until your Claude Code sessions are done
 - **Live status** shows how long it's been brewing, or how long is left
 - **Turn off the display now**, the perfect companion to Cold Brew
 - **Open at login**
@@ -68,12 +82,17 @@ cd brew
 
 ```
 Sources/Brew/
-├── BrewApp.swift   # MenuBarExtra entry point
-├── Brewer.swift    # IOKit power assertions, timer, login item
-└── MenuView.swift  # the UI
+├── BrewApp.swift        # MenuBarExtra entry point
+├── Brewer.swift         # IOKit power assertions, timer, login item
+├── ClaudeWatcher.swift  # detects busy Claude Code sessions
+└── MenuView.swift       # the UI
 ```
 
 Brew is a thin layer over `IOPMAssertionCreateWithName`, which is the same API `caffeinate` uses, wrapped in a nicer cup.
+
+## License
+
+[MIT](LICENSE): take it, fork it, ship it, sell it. Do whatever you want with it, just keep the copyright notice.
 
 ---
 

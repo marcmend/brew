@@ -68,6 +68,14 @@ struct MenuView: View {
 
     private func status(at now: Date) -> String {
         guard let mode = brewer.mode else { return "Le Mac s'endort normalement" }
+        if brewer.duration == .whileClaude {
+            if let idleSince = brewer.claudeIdleSince {
+                let left = idleSince.addingTimeInterval(brewer.claudeGracePeriod).timeIntervalSince(now)
+                return "\(mode.title) · Claude au repos, arrêt dans \(format(left))"
+            }
+            let sessions = brewer.claudeSessions > 1 ? " (×\(brewer.claudeSessions))" : ""
+            return "\(mode.title) · Claude travaille\(sessions)"
+        }
         if let end = brewer.endDate {
             return "\(mode.title) · encore \(format(end.timeIntervalSince(now)))"
         }
@@ -92,7 +100,7 @@ struct MenuView: View {
                 .tracking(0.8)
                 .foregroundStyle(.tertiary)
             HStack(spacing: 6) {
-                ForEach(BrewDuration.allCases) { duration in
+                ForEach(BrewDuration.timed) { duration in
                     Chip(label: duration.label,
                          isSelected: brewer.duration == duration,
                          tint: brewer.mode?.tint ?? .accentColor) {
@@ -100,6 +108,11 @@ struct MenuView: View {
                     }
                 }
             }
+            .opacity(brewer.duration == .whileClaude ? 0.5 : 1)
+            ClaudeRow(isOn: Binding(
+                get: { brewer.duration == .whileClaude },
+                set: { on in withAnimation(.easeOut(duration: 0.15)) { brewer.duration = on ? .whileClaude : .indefinite } }
+            ))
         }
     }
 
@@ -216,6 +229,44 @@ private struct Chip: View {
         }
         .buttonStyle(.plain)
         .onHover { isHovered = $0 }
+    }
+}
+
+private struct ClaudeRow: View {
+    @Binding var isOn: Bool
+    private let claude = Color(red: 0.85, green: 0.47, blue: 0.34)
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "sparkle")
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(isOn ? .white : claude)
+                .frame(width: 24, height: 24)
+                .background(Circle().fill(isOn ? AnyShapeStyle(claude) : AnyShapeStyle(claude.opacity(0.16))))
+            VStack(alignment: .leading, spacing: 1) {
+                Text("Tant que Claude travaille")
+                    .font(.system(size: 12.5, weight: .medium))
+                Text("S'arrête 2 min après la fin de la tâche")
+                    .font(.system(size: 10.5))
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
+            Toggle("", isOn: $isOn)
+                .toggleStyle(.switch)
+                .controlSize(.mini)
+                .tint(claude)
+                .labelsHidden()
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
+        .background {
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .fill(isOn ? AnyShapeStyle(claude.opacity(0.12)) : AnyShapeStyle(.primary.opacity(0.045)))
+        }
+        .overlay {
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .strokeBorder(isOn ? claude.opacity(0.45) : .clear, lineWidth: 1)
+        }
     }
 }
 

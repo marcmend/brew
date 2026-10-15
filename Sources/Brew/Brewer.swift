@@ -48,6 +48,8 @@ enum BrewMode: String, CaseIterable, Identifiable {
 }
 
 enum BrewDuration: Int, CaseIterable, Identifiable {
+    /// Reste actif tant qu'une session Claude Code travaille.
+    case whileClaude = -1
     case indefinite = 0
     case quarter = 900
     case oneHour = 3600
@@ -56,8 +58,12 @@ enum BrewDuration: Int, CaseIterable, Identifiable {
 
     var id: Int { rawValue }
 
+    /// Durées proposées sous forme de pastilles.
+    static let timed: [BrewDuration] = [.indefinite, .quarter, .oneHour, .twoHours, .fourHours]
+
     var label: String {
         switch self {
+        case .whileClaude: "Claude"
         case .indefinite: "∞"
         case .quarter: "15 min"
         case .oneHour: "1 h"
@@ -79,9 +85,18 @@ final class Brewer: ObservableObject {
         }
     }
     @Published private(set) var launchAtLogin = SMAppService.mainApp.status == .enabled
+    /// Sessions Claude en train de travailler (mode `.whileClaude`).
+    @Published private(set) var claudeSessions = 0
+    /// Depuis quand plus aucune session Claude ne travaille.
+    @Published private(set) var claudeIdleSince: Date?
+
+    /// Délai sans activité Claude avant de relâcher la veille.
+    let claudeGracePeriod: TimeInterval = 120
 
     private var assertionID: IOPMAssertionID = 0
     private var expirationTimer: Timer?
+    private var claudeTimer: Timer?
+    private let claudeWatcher = ClaudeWatcher()
 
     init() {
         duration = BrewDuration(rawValue: UserDefaults.standard.integer(forKey: "duration")) ?? .indefinite
@@ -111,6 +126,7 @@ final class Brewer: ObservableObject {
         releaseAssertion()
         expirationTimer?.invalidate()
         expirationTimer = nil
+        stopWatchingClaude()
         mode = nil
         startDate = nil
         endDate = nil
@@ -136,9 +152,17 @@ final class Brewer: ObservableObject {
     private func scheduleExpiration() {
         expirationTimer?.invalidate()
         expirationTimer = nil
-        guard duration != .indefinite else {
+        stopWatchingClaude()
+        switch duration {
+        case .indefinite:
             endDate = nil
             return
+        case .whileClaude:
+            endDate = nil
+            startWatchingClaude()
+            return
+        default:
+            break
         }
         let end = Date.now.addingTimeInterval(TimeInterval(duration.rawValue))
         endDate = end
@@ -147,6 +171,34 @@ final class Brewer: ObservableObject {
         }
         RunLoop.main.add(timer, forMode: .common)
         expirationTimer = timer
+    }
+
+    private func startWatchingClaude() {
+        _ = claudeWatcher.activeSessions() // premier échantillon de référence
+        claudeIdleSince = .now
+        let timer = Timer(timeInterval: 5, repeats: true) { [weak self] _ in
+            Task { @MainActor in self?.pollClaude() }
+        }
+        RunLoop.main.add(timer, forMode: .common)
+        claudeTimer = timer
+    }
+
+    private func stopWatchingClaude() {
+        claudeTimer?.invalidate()
+        claudeTimer = nil
+        claudeSessions = 0
+        claudeIdleSince = nil
+    }
+
+    private func pollClaude() {
+        claudeSessions = claudeWatcher.activeSessions()
+        if claudeSessions > 0 {
+            claudeIdleSince = nil
+        } else if let idleSince = claudeIdleSince {
+            if Date.now.timeIntervalSince(idleSince) >= claudeGracePeriod { stop() }
+        } else {
+            claudeIdleSince = .now
+        }
     }
 
     private func releaseAssertion() {

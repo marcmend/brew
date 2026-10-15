@@ -246,7 +246,7 @@ private struct ClaudeRow: View {
             VStack(alignment: .leading, spacing: 1) {
                 Text("Tant que Claude travaille")
                     .font(.system(size: 12.5, weight: .medium))
-                Text("S'arrête 2 min après la fin de la tâche")
+                Text("Se coupe 2 min après la fin")
                     .font(.system(size: 10.5))
                     .foregroundStyle(.secondary)
             }

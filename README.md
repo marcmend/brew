@@ -17,8 +17,8 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/marcmend/brew/releases/download/v1.0.0/Brew-1.0.0-arm64.dmg">
-    <img src="https://img.shields.io/badge/Download_for_Mac-v1.0.0-8B5A2B?style=for-the-badge&logo=apple&logoColor=white" alt="Download for Mac">
+  <a href="https://github.com/marcmend/brew/releases/download/v1.1.0/Brew-1.1.0-arm64.dmg">
+    <img src="https://img.shields.io/badge/Download_for_Mac-v1.1.0-8B5A2B?style=for-the-badge&logo=apple&logoColor=white" alt="Download for Mac">
   </a>
   <br>
   <sub>Apple Silicon (M1 and later) · macOS 14+ · <a href="https://github.com/marcmend/brew/releases">all releases</a></sub>
@@ -68,7 +68,7 @@ An idle `claude` process waiting for a prompt sits around 0.5% CPU. While it wor
 
 ### Download
 
-1. Download **[Brew-1.0.0-arm64.dmg](https://github.com/marcmend/brew/releases/download/v1.0.0/Brew-1.0.0-arm64.dmg)**, open it and drag **Brew** into **Applications**.
+1. Download **[Brew-1.1.0-arm64.dmg](https://github.com/marcmend/brew/releases/download/v1.1.0/Brew-1.1.0-arm64.dmg)**, open it and drag **Brew** into **Applications**.
 2. Launch Brew from Applications. A ☕ appears in your menu bar.
 
 > **First launch:** Brew isn't notarized by Apple yet, so macOS blocks it the first time ("Apple could not verify Brew…"). Click **Done**, then go to **System Settings → Privacy & Security**, scroll down and click **Open Anyway**. You only need to do this once.

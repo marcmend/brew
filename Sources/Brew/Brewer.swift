@@ -97,6 +97,7 @@ final class Brewer: ObservableObject {
     private var expirationTimer: Timer?
     private var claudeTimer: Timer?
     private let claudeWatcher = ClaudeWatcher()
+    private let presenceKeeper = PresenceKeeper()
 
     init() {
         duration = BrewDuration(rawValue: UserDefaults.standard.integer(forKey: "duration")) ?? .indefinite
@@ -119,6 +120,7 @@ final class Brewer: ObservableObject {
         assertionID = id
         mode = newMode
         startDate = .now
+        presenceKeeper.start(newMode)
         scheduleExpiration()
     }
 
@@ -127,6 +129,7 @@ final class Brewer: ObservableObject {
         expirationTimer?.invalidate()
         expirationTimer = nil
         stopWatchingClaude()
+        presenceKeeper.stop()
         mode = nil
         startDate = nil
         endDate = nil

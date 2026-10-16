@@ -17,6 +17,14 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/marcmend/brew/releases/download/v1.0.0/Brew-1.0.0-arm64.dmg">
+    <img src="https://img.shields.io/badge/Download_for_Mac-v1.0.0-8B5A2B?style=for-the-badge&logo=apple&logoColor=white" alt="Download for Mac">
+  </a>
+  <br>
+  <sub>Apple Silicon (M1 and later) · macOS 14+ · <a href="https://github.com/marcmend/brew/releases">all releases</a></sub>
+</p>
+
+<p align="center">
   <img src="docs/screenshot.png" width="340" alt="Brew menu">
 </p>
 
@@ -58,6 +66,17 @@ An idle `claude` process waiting for a prompt sits around 0.5% CPU. While it wor
 
 ## Install
 
+### Download
+
+1. Download **[Brew-1.0.0-arm64.dmg](https://github.com/marcmend/brew/releases/download/v1.0.0/Brew-1.0.0-arm64.dmg)**, open it and drag **Brew** into **Applications**.
+2. Launch Brew from Applications. A ☕ appears in your menu bar.
+
+> **First launch:** Brew isn't notarized by Apple yet, so macOS blocks it the first time ("Apple could not verify Brew…"). Click **Done**, then go to **System Settings → Privacy & Security**, scroll down and click **Open Anyway**. You only need to do this once.
+>
+> Or, from a terminal: `xattr -dr com.apple.quarantine /Applications/Brew.app`
+
+### Build from source
+
 Requires macOS 14+ and the Xcode Command Line Tools (`xcode-select --install`).
 
 ```bash
@@ -66,9 +85,7 @@ cd brew
 ./build.sh install   # builds Brew.app, copies it to /Applications and launches it
 ```
 
-`./build.sh` alone builds `build/Brew.app` without installing it.
-
-> The app is ad-hoc signed. If macOS complains on first launch, right-click **Brew.app → Open**.
+`./build.sh` alone builds `build/Brew.app` without installing it, and `scripts/create-dmg.sh <version>` packages it into `dist/`.
 
 ## Good to know
 
